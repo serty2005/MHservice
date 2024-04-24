@@ -14,9 +14,11 @@ def post(url, params):
         return sys.stdout.write("Успешно добавлено\n")
     elif response.status_code == 200:
         return response.text
-    else:
-        sys.stderr.write("Ошибка при загрузке данных: {}\n".format(response.status_code))
+    elif response.status_code == 500:
+        sys.stderr.write(response.text)
         return None
+    else:
+        sys.stderr.write("Код ошибки: {}\n".format(response.status_code))
 
 def create_table(type):
     #Создаём пустую таблицу
@@ -95,11 +97,11 @@ def update_sd_table():
     url = 'https://myhoreca.itsm365.com/sd/services/rest/find/objectBase$FR'
     params = {'accessKey': os.getenv('SDKEY'), 'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'}
     response = post(url, params)
-    if response:
+    if response is None:
+        sys.stderr.write("Check the key\n" + os.getenv('SDKEY'))   
+    else:
         importFromServiceDesk(response)
         sys.stdout.write("База из SD обновлена успешно.\n")
-    else:
-        sys.stderr.write("Ошибка при получении данных: {}\n".format(response.status_code))
 
 def compare_and_update():
     conn_sd = sqlite3.connect(os.getenv("BDPATH") + 'fiscals.db')
@@ -135,9 +137,9 @@ def compare_and_update():
     conn_sd.close()
 
 def run_tasks():
-    schedule.every(15).seconds.do(process_json_files, os.getenv('JSONPATH'))
-    schedule.every(15).seconds.do(update_sd_table)
-    schedule.every(15).seconds.do(compare_and_update)
+    schedule.every(20).minutes.do(process_json_files, os.getenv('JSONPATH'))
+    schedule.every(20).minutes.do(update_sd_table)
+    schedule.every(20).minutes.do(compare_and_update)
 
     while True:
         schedule.run_pending()
@@ -145,5 +147,8 @@ def run_tasks():
 
 if __name__ == '__main__':
     create_table('pos_fiscals')
+    sys.stdout.write('<Таблица pos_fiscals создана>\n')
     create_table('sd_fiscals')
+    sys.stdout.write('<Таблица sd_fiscals создана>\n')
+    sys.stdout.write('<Запуск планировщика>\n')
     run_tasks()
