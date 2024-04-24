@@ -3,48 +3,59 @@ import json
 import sqlite3
 import time
 import requests
+import sys
 from dateutil import parser
 import schedule
-
-def get(url, params):
-    response = requests.get(url)
-    if response.ok:
-        return json.loads(response.text)
-    else:
-        print("Ошибка при загрузке данных:", response.status_code)
-        return None
 
 
 def post(url, params):
     response = requests.post(url, params=params)
-    if response.ok:
-        return json.loads(response.text)
+    if response.status_code == 201:
+        return sys.stdout.write("Успешно добавлено\n")
+    elif response.status_code == 200:
+        return response.text
     else:
-        print("Ошибка при загрузке данных:", response.status_code)
+        sys.stderr.write("Ошибка при загрузке данных: {}\n".format(response.status_code))
         return None
-    
 
-def create_json_table():
-
-    path = os.getenv("BDPATH") + 'fiscal_registers_fromPOS.db'
-    conn = sqlite3.connect(path)
+def create_table(type):
+    #Создаём пустую таблицу
+    db_path = os.getenv("BDPATH")
+    db_file = "fiscals.db"
+    table_name = type
+    conn = sqlite3.connect(db_path + db_file)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS fiscal_registers
-                 (modelName TEXT, serialNumber TEXT PRIMARY KEY, RNM TEXT, organizationName TEXT,
-                  fn_serial TEXT, datetime_reg TEXT, dateTime_end TEXT, ofdName TEXT,
-                  bootVersion TEXT, ffdVersion TEXT, fnExecution TEXT, INN TEXT)''')
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS %s (
+            serialNumber TEXT PRIMARY KEY,
+            modelName TEXT,
+            RNM TEXT,
+            organizationName TEXT,
+            fn_serial TEXT,
+            datetime_reg TEXT,
+            dateTime_end TEXT,
+            ofdName TEXT,
+            bootVersion TEXT,
+            ffdVersion TEXT,
+            fnExecution TEXT,
+            INN TEXT,
+            UUID TEXT,
+            owner_uuid TEXT
+        )""" % table_name)
     conn.commit()
     conn.close()
 
 
-# Функция для вставки данных из файла .json в базу данных SQLite
 def importFromJSON(file_path):
-    with open(file_path, 'r') as json_file:
+    with open(file_path, 'r', encoding='utf-8') as json_file:
         data = json.load(json_file)
-        path = os.getenv("BDPATH") + 'fiscal_registers_fromPOS.db'
+        path = os.getenv("BDPATH") + 'fiscals.db'
         conn = sqlite3.connect(path)
         c = conn.cursor()
-        c.execute('''INSERT OR REPLACE INTO fiscal_registers 
+        table_exists = c.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='pos_fiscals' ''').fetchone()
+        if not table_exists:
+            create_table('pos_fiscals')
+        c.execute('''INSERT OR REPLACE INTO pos_fiscals 
                      (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
                      dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
@@ -54,118 +65,85 @@ def importFromJSON(file_path):
         conn.commit()
         conn.close()
 
-
-# Функция для обхода всех файлов .json в заданной директории и чтения данных из них
 def process_json_files(directory):
     for filename in os.listdir(directory):
         if filename.endswith('.json'):
-            file_path = os.path.join(directory, filename)
-            importFromJSON(file_path)
+            importFromJSON(os.path.join(directory, filename))
 
 
-# Функция для создания таблицы в базе данных SQLite
-def create_sd_table():
-    path = os.getenv('BDPATH') + 'fiscal_registers_fromSD.db'
-    conn = sqlite3.connect(path)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS fiscal_registers
-                 (RNKKT TEXT, FNNumber TEXT, KKTRegDate TEXT, UUID TEXT PRIMARY KEY,
-                  FRSerialNumber TEXT, FNExpireDate TEXT)''')
-    conn.commit()
-    conn.close()
-
-
-# Функция для вставки данных из JSON объекта в базу данных SQLite
 def importFromServiceDesk(sd_data):
-    path = os.getenv("BDPATH") + 'fiscal_registers_fromSD.db'
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(os.getenv("BDPATH") + 'fiscals.db')
+    parsed=json.loads(sd_data)
     c = conn.cursor()
-    for entry in sd_data:
-            RNKKT = entry['RNKKT']
-            FNNumber = entry['FNNumber']
-            KKTRegDate = entry['KKTRegDate']
-            UUID = entry['UUID']
-            FRSerialNumber = entry['FRSerialNumber']
-            FNExpireDate = entry['FNExpireDate']
-            c.execute('''INSERT OR REPLACE INTO fiscal_registers 
-                         (RNKKT, FNNumber, KKTRegDate, UUID, FRSerialNumber, FNExpireDate)
-                         VALUES (?, ?, ?, ?, ?, ?)''',
-                         (RNKKT, FNNumber, KKTRegDate, UUID, FRSerialNumber, FNExpireDate))
+    for data in parsed:
+        owner_uuid = data['owner']['UUID'] if data.get('owner') and data['owner'].get('UUID') else None
+        modelName = data['ModelKKT']['title']
+        ofdName = data['OFDName']['title'] if data.get('OFDName') else None
+        ffdVersion = data['FFD']['title'] if data.get('FFD') else None
+
+        c.execute('''INSERT OR REPLACE INTO sd_fiscals 
+                     (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
+                     dateTime_end, ofdName, bootVersion, ffdVersion, owner_uuid, UUID)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     (modelName, data['FRSerialNumber'], data['RNKKT'], data['LegalName'],
+                      data['FNNumber'], data['KKTRegDate'], data['FNExpireDate'], ofdName,
+                      data['FRDownloader'], ffdVersion, owner_uuid, data['UUID']))
     conn.commit()
     conn.close()
 
-
-# Функция для получения данных по указанной ручке и обновления базы данных
-def update_database():
+def update_sd_table():
     url = 'https://myhoreca.itsm365.com/sd/services/rest/find/objectBase$FR'
-    params = {'accessKey': os.getenv('SDKEY'), 'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber'}
+    params = {'accessKey': os.getenv('SDKEY'), 'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'}
     response = post(url, params)
     if response:
-        create_sd_table()
         importFromServiceDesk(response)
-        print("База данных обновлена успешно.")
+        sys.stdout.write("База из SD обновлена успешно.\n")
     else:
-        print("Ошибка при получении данных:", response.status_code)
-
+        sys.stderr.write("Ошибка при получении данных: {}\n".format(response.status_code))
 
 def compare_and_update():
-
-    pathbd = os.getenv("BDPATH") + 'fiscal_registers_fromSD.db'
-    conn_sd = sqlite3.connect(pathbd)
-    path = os.getenv("BDPATH") + 'fiscal_registers_fromPOS.db'
-    conn_json = sqlite3.connect(path)
-    c_json = conn_json.cursor()
+    conn_sd = sqlite3.connect(os.getenv("BDPATH") + 'fiscals.db')
+    conn_pos = sqlite3.connect(os.getenv("BDPATH") + 'fiscals.db')
+    c_pos = conn_pos.cursor()
     c_sd = conn_sd.cursor()
 
-    # Выбираем данные для сравнения из базы данных SD
-    c_sd.execute('''SELECT FRSerialNumber, FNNumber, FNExpireDate, UUID
-                    FROM fiscal_registers''')
+    c_sd.execute('''SELECT modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
+                     dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, owner_uuid, UUID
+                    FROM sd_fiscals''')
     sd_data = c_sd.fetchall()
 
-    # Выбираем данные для сравнения из базы данных JSON
-    c_json.execute('''SELECT serialNumber, fn_serial, dateTime_end
-                      FROM fiscal_registers''')
-    json_data = c_json.fetchall()
+    c_pos.execute('''SELECT modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
+                     dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN
+                      FROM pos_fiscals''')
+    pos_data = c_pos.fetchall()
 
-    # Сравниваем данные и отправляем запросы на обновление при несоответствии
     for sd_entry in sd_data:
-        for json_entry in json_data:
-            # Проверяем совпадение по FRSerialNumber и serialNumber
-            if sd_entry[0] == json_entry[0]:
-                # Преобразуем даты из строкового формата в объекты datetime для корректного сравнения
-                sd_date = parser.parse(sd_entry[2])
-                json_date = parser.parse(json_entry[2])
+        for pos_entry in pos_data:
+            if sd_entry[1] == pos_entry[1]:
+                sd_date = parser.parse(sd_entry[6])
+                pos_date = parser.parse(pos_entry[6])
 
-                if sd_date != json_date:  # Сравниваем даты
-                    
-                    print(f"Объект с UUID {sd_entry[3]} будет изменен.") # Выводим UUID объекта для тестирования
-                    formatted_date = json_date.strftime('%Y.%m.%d %H:%M:%S')
-
-                    # Отправляем запрос на редактирование объекта в SD
-                    edit_url = f'https://myhoreca.itsm365.com/sd/services/rest/edit/{sd_entry[3]}/'
-                    params = {'accessKey': os.getenv('SDKEY'), 'FNNumber': json_entry[1], 'FNExpireDate': formatted_date}
+                if sd_date != pos_date:
+                    sys.stdout.write(f"Объект с UUID {sd_entry[12]} будет изменен.\n")
+                    formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
+                    legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
+                    edit_url = f'https://myhoreca.itsm365.com/sd/services/rest/edit/{sd_entry[12]}'
+                    params = {'accessKey': os.getenv('SDKEY'), 'FNNumber': pos_entry[4], 'FNExpireDate': formatted_date, 'LegalName': legalName, 'RNKKT': pos_entry[2], 'FRDownloader': pos_entry[8]}
                     post(edit_url, params)
-                    
-    conn_json.close()
+
+    conn_pos.close()
     conn_sd.close()
 
-
-
 def run_tasks():
-    # Задание для работы с папкой с JSON файлами каждый час
-    schedule.every().hour.do(process_json_files, os.getenv('JSONPATH'))
+    schedule.every(15).seconds.do(process_json_files, os.getenv('JSONPATH'))
+    schedule.every(15).seconds.do(update_sd_table)
+    schedule.every(15).seconds.do(compare_and_update)
 
-    # Задание для выгрузки данных из SD каждые 2 часа
-    schedule.every(2).hours.do(importFromServiceDesk)
-
-    # Задание для сравнения и обновления данных каждые 2 часа
-    schedule.every(2).hours.do(compare_and_update)
- 
-    # Запускаем бесконечный цикл для выполнения задач с периодичностью
     while True:
         schedule.run_pending()
         time.sleep(1)
 
-
 if __name__ == '__main__':
+    create_table('pos_fiscals')
+    create_table('sd_fiscals')
     run_tasks()
