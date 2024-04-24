@@ -13,8 +13,6 @@ RUN git clone https://github.com/serty2005/MHservice.git .
 
 ENV TZ="Europe/Moscow"
 
-ENV SDKEY=&SDKEY
-
 RUN pip install -r requirements.txt
 
 CMD ["python", "/opt/app/app.py"]
