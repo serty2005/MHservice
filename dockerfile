@@ -8,8 +8,8 @@ RUN apt-get update && \
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -r requirements.txt
-
 RUN git clone https://github.com/serty2005/MHservice.git .
+
+RUN pip install -r requirements.txt
 
 CMD ["python", "/opt/app/app.py"]
