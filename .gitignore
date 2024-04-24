@@ -1,3 +1,4 @@
 /.venv
 .env
 docker-compose.yml
+files/*.db
