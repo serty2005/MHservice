@@ -1,6 +1,5 @@
 FROM python:3.11.9-slim
 
-WORKDIR /opt/app
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -8,7 +7,11 @@ RUN apt-get update && \
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /opt/app
+
 RUN git clone https://github.com/serty2005/MHservice.git .
+
+ENV TZ="Europe/Moscow"
 
 RUN pip install -r requirements.txt
 
