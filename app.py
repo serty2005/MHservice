@@ -6,7 +6,9 @@ import requests
 import sys
 from dateutil import parser
 import schedule
+# from dotenv import load_dotenv
 
+# load_dotenv()
 
 def post(url, params):
     response = requests.post(url, params=params)
@@ -14,9 +16,9 @@ def post(url, params):
         return sys.stdout.write("Успешно добавлено\n")
     elif response.status_code == 200:
         return response.text
-    else:
-        sys.stderr.write("Ошибка при загрузке данных: {}\n".format(response.status_code))
-        return None
+    elif response.status_code == 500:
+        sys.stderr.write("Ошибка подключения: " + str.strip(response.text) + '\n')
+        sys.exit(1)
 
 def create_table(type):
     #Создаём пустую таблицу
@@ -91,15 +93,14 @@ def importFromServiceDesk(sd_data):
     conn.commit()
     conn.close()
 
+
 def update_sd_table():
     url = 'https://myhoreca.itsm365.com/sd/services/rest/find/objectBase$FR'
     params = {'accessKey': os.getenv('SDKEY'), 'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'}
     response = post(url, params)
     if response:
         importFromServiceDesk(response)
-        sys.stdout.write("База из SD обновлена успешно.\n")
-    else:
-        sys.stderr.write("Ошибка при получении данных: {}\n".format(response.status_code))
+
 
 def compare_and_update():
     conn_sd = sqlite3.connect(os.getenv("BDPATH") + 'fiscals.db')
@@ -126,7 +127,10 @@ def compare_and_update():
                 if sd_date != pos_date:
                     sys.stdout.write(f"Объект с UUID {sd_entry[12]} будет изменен.\n")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
-                    legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
+                    if 'ИНН:' not in pos_entry[3]:
+                        legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
+                    else: 
+                        legalName = pos_entry[3]
                     edit_url = f'https://myhoreca.itsm365.com/sd/services/rest/edit/{sd_entry[12]}'
                     params = {'accessKey': os.getenv('SDKEY'), 'FNNumber': pos_entry[4], 'FNExpireDate': formatted_date, 'LegalName': legalName, 'RNKKT': pos_entry[2], 'FRDownloader': pos_entry[8]}
                     post(edit_url, params)
@@ -135,9 +139,9 @@ def compare_and_update():
     conn_sd.close()
 
 def run_tasks():
-    schedule.every(15).seconds.do(process_json_files, os.getenv('JSONPATH'))
-    schedule.every(15).seconds.do(update_sd_table)
-    schedule.every(15).seconds.do(compare_and_update)
+    schedule.every(30).minutes.do(update_sd_table)
+    schedule.every(30).minutes.do(compare_and_update)
+    schedule.every(30).minutes.do(process_json_files, os.getenv('JSONPATH'))
 
     while True:
         schedule.run_pending()
