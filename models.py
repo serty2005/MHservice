@@ -1,101 +1,122 @@
-from sqlalchemy import create_engine, Column, String, String, ForeignKey, event
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
-from typing import Optional, Annotated
+from sqlalchemy import create_engine, String, String, ForeignKey
+from sqlalchemy.orm import relationship, sessionmaker, Mapped, mapped_column, DeclarativeBase
+from typing import List
+from datetime import datetime
 
-c_uuid = Annotated[str, ForeignKey('companies.uuid')]
+class Base(DeclarativeBase):
+    pass
 
-Base = declarative_base()
+engine = create_engine('postgresql://postgres:994525@10.25.1.250:5432/mhtest', echo=True)
+session_instance = sessionmaker(engine)
+
 
 class Company(Base):
     __tablename__ = 'companies'
 
-    uuid = Column(String, primary_key=True)
-    title = Column(String)
-    address = Column(String)
-    additional_name = Column(String)
+    uuid: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(100))
+    address: Mapped[str | None] = mapped_column(String(250))
+    additional_name: Mapped[str | None] = mapped_column(String(150))
+    lastmodify: Mapped[datetime]
+    # equipinuse: Mapped[List['Server','Workstation','Fiscalnik']] = relationship(back_populates="owner")
 
-    servers = relationship("Server", back_populates="owner")
-    workstations = relationship("Workstation", back_populates="owner")
-    fiscals = relationship("Fiscalnik", back_populates="owner")
+    servers: Mapped[List["Server"]] = relationship(back_populates="owner")
+    workstations: Mapped[List["Workstation"]] = relationship(back_populates="owner")
+    fiscals: Mapped[List["Fiscalnik"]] = relationship(back_populates="owner")
+
+    def __repr__(self):
+        return f'{self.title}'
+    
+
+        
 
 class Server(Base):
     __tablename__ = 'servers'
     
-    uuid = Column(String, primary_key=True)
-    UniqueID = Column(String)
-    Teamviewer = Column(String)
-    AnyDesk = Column(String)
-    rdp = Column(String)
-    ip = Column(String)
-    CabinetLink = Column(String)
-    DeviceName = Column(String)
+    uuid: Mapped[str] = mapped_column(primary_key=True)
+    UniqueID: Mapped[str | None] = mapped_column(String(50))
+    Teamviewer: Mapped[str | None] = mapped_column(String(100))
+    AnyDesk: Mapped[str | None] = mapped_column(String(100))
+    rdp: Mapped[str | None] = mapped_column(String(100))
+    ip: Mapped[str | None] = mapped_column(String(100))
+    CabinetLink: Mapped[str | None] = mapped_column(String(100))
+    DeviceName: Mapped[str | None] = mapped_column(String(100))
+    lastmodify: Mapped[datetime]
 
-    company_uuid = c_uuid
-    owner = relationship("Company", back_populates="servers")
+    company_uuid: Mapped[str] = mapped_column(ForeignKey('companies.uuid'))
+    owner: Mapped["Company"] = relationship(back_populates="servers")
+
+    def __repr__(self):
+        return f'{self.DeviceName}'
 
 class Workstation(Base):
     __tablename__ = 'workstations'
 
-    uuid = Column(String, primary_key=True)
-    AnyDesk = Column(String)
-    Teamviewer = Column(String)
-    DeviceName = Column(String)
+    uuid: Mapped[str] = mapped_column(primary_key=True)
+    AnyDesk: Mapped[str | None] = mapped_column(String(100))
+    Teamviewer: Mapped[str | None] = mapped_column(String(100))
+    DeviceName: Mapped[str | None] = mapped_column(String(100))
+    lastmodify: Mapped[datetime]
 
-    company_uuid = Column(String, ForeignKey('companies.uuid'))
-    owner = relationship("Company", back_populates="workstations")
+    company_uuid: Mapped[str] = mapped_column(ForeignKey('companies.uuid'))
+    owner: Mapped["Company"] = relationship(back_populates="workstations")
+
+    def __repr__(self):
+        return f'{self.DeviceName}'
 
 class Fiscalnik(Base):
     __tablename__ = 'fiscals'
 
-    uuid = Column(String, primary_key=True)
-    rnkkt = Column(String)
-    LegalName = Column(String)
-    FNNumber = Column(String)
-    KKTRegDate = Column(String)
-    FNExpireDate = Column(String)
-    FRSerialNumber = Column(String)
+    uuid: Mapped[str] = mapped_column(primary_key=True)
+    rnkkt: Mapped[str | None] = mapped_column(String(50))
+    LegalName: Mapped[str] = mapped_column(String(150))
+    FNNumber: Mapped[int]
+    KKTRegDate: Mapped[datetime]
+    FNExpireDate: Mapped[datetime]
+    FRSerialNumber: Mapped[int]
+    lastmodify: Mapped[datetime]
 
-    company_uuid = Column(String, ForeignKey('companies.uuid'))
-    owner = relationship("Company", back_populates="fiscals")
+    company_uuid: Mapped[str] = mapped_column(ForeignKey('companies.uuid'))
+    owner: Mapped["Company"] = relationship(back_populates="fiscals")
 
-    # Внешние ключи для связи с вспомогательными таблицами
-    ofd_uuid = Column(String, ForeignKey('ofd_names.uuid'))
-    ofd = relationship("OFDName")
-    model_kkt_uuid = Column(String, ForeignKey('model_kkts.uuid'))
-    model_kkt = relationship("ModelKKT")
-    srok_fn_uuid = Column(String, ForeignKey('sroki_fns.uuid'))
-    srok_fn = relationship("SrokFN")
+    ofd_uuid: Mapped[str] = mapped_column(ForeignKey('ofd_names.uuid'))
+    ofd: Mapped["OFDName"] = relationship()
+    model_kkt_uuid: Mapped[str] = mapped_column(ForeignKey('model_kkts.uuid'))
+    model_kkt: Mapped["ModelKKT"] = relationship()
+    srok_fn_uuid: Mapped[str] = mapped_column(ForeignKey('sroki_fns.uuid'))
+    srok_fn: Mapped["SrokFN"] = relationship()
+
+    def __repr__(self):
+        return f'{self.FRSerialNumber}'
 
 class OFDName(Base):
     __tablename__ = 'ofd_names'
 
-    uuid = Column(String, primary_key=True)
-    title = Column(String)
-    code = Column(String)
+    uuid: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    code: Mapped[str]
+
     def __repr__(self):
-        return self.title
+        return f'{self.title}'
 
 class ModelKKT(Base):
     __tablename__ = 'model_kkts'
 
-    uuid = Column(String, primary_key=True)
-    title = Column(String)
-    code = Column(String)
+    uuid: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    code: Mapped[str]
+
     def __repr__(self):
-        return self.title
+        return f'{self.title}'
 
 class SrokFN(Base):
     __tablename__ = 'sroki_fns'
 
-    uuid = Column(String, primary_key=True)
-    title = Column(String)
-    code = Column(String)
+    uuid: Mapped[str] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    code: Mapped[str]
+
     def __repr__(self):
-        return self.title
- 
-engine = create_engine('sqlite:///base.db')
-session_factory = sessionmaker(bind=engine)
-session_instance = session_factory()
+        return f'{self.title}'
 
 Base.metadata.create_all(engine)

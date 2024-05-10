@@ -1,48 +1,57 @@
-from scripts import req_from_sd as req
-from models import Company, Server, Workstation, Fiscalnik, session_instance, OFDName, SrokFN, ModelKKT
+from scripts import req_all_from_sd as req
+from scripts import req_by_uuid as get
+import models
 import json
+from datetime import datetime
 
 def fill_companies():
     metaclass = 'ou$company'
-    attrs = 'adress,title,UUID,KEsInUse,additionalName,childOUs, parent'
+    attrs = 'adress,title,UUID,KEsInUse,additionalName,childOUs, parent,lastModifiedDate'
     response = req(metaclass, attrs)
+    if response:    
+        with models.session_instance() as session:         
+            for company_json in response:
+                existing_company = session.query(models.Company).filter_by(uuid=company_json['UUID']).first()
+                date_string = company_json['lastModifiedDate']
+                strfdate = datetime.strptime(date_string, '%Y.%m.%d %H:%M:%S')
+                base_date = strfdate.strftime('%Y-%m-%dT%H:%M:%S')
 
-    if response:
-        companies_json = json.loads(response)
-        for company_json in companies_json:
-            company = Company(
-                uuid = company_json['UUID'],
-                title = company_json['title'],
-                address = company_json['adress'],
-                additional_name = company_json['additionalName'] if 'additionalName' in company_json else None
-            )
-            try: 
-                session_instance.add(company)
-                session_instance.flush()
-            except:
-                session_instance.rollback()
-                print(company_json['title'])
-                continue
-            kes_in_use = company_json['KEsInUse']
-            for kes in kes_in_use:
-                meta_class = kes['metaClass']
-                equipment_uuid = kes['UUID']
-                if meta_class == 'objectBase$Server':
-                    server = Server(
-                        uuid = equipment_uuid
+                if not existing_company or existing_company.lastmodify.strftime('%Y-%m-%dT%H:%M:%S') != base_date:
+                    company = models.Company(
+                    title=company_json['title'],
+                    uuid=company_json['UUID'],
+                    address=company_json['adress'],
+                    additional_name=company_json['additionalName'],
+                    lastmodify=base_date
                     )
-                    company.servers.append(server)
-                if meta_class == 'objectBase$Workstation':
-                    workstation = Workstation(
-                        uuid = equipment_uuid
-                    )
-                    company.workstations.append(workstation)
-                if meta_class == 'objectBase$FR':
-                    fiscal = Fiscalnik(
-                        uuid = equipment_uuid
-                    )
-                    company.fiscals.append(fiscal)
-        session_instance.commit()
+                kes_in_use = company_json['KEsInUse']
+                if kes_in_use: 
+                    
+                    for kes in kes_in_use:
+                        if kes['metaClass'] == 'objectBase$Server':
+
+                            server = models.Server(
+                                    uuid = kes['UUID'],
+                                    owner = company.uuid
+                                    )
+                            company.servers.append(server)
+                        if kes['metaClass'] == 'objectBase$Workstation':
+                            workstation = models.Workstation(
+                                    uuid = kes['UUID'],
+                                    owner = company.uuid
+                                    )
+                            company.workstations.append(workstation)
+                        if kes['metaClass'] == 'objectBase$FR':
+                            fiscal = models.Fiscalnik(
+                                    uuid = kes['UUID'],
+                                    owner = company.uuid
+                                    )
+                            company.fiscals.append(fiscal)
+
+            session.merge(company)
+            else: continue
+            session.commit()
+        
 
 def fill_servers():
     metaclass = 'objectBase$Server'
@@ -294,9 +303,14 @@ def fill_sroki_fns():
 
 if __name__ == '__main__':
     fill_companies()
-    fill_servers()
-    fill_workstations()
-    fill_ofd_names()
-    fill_model_kkts()
-    fill_sroki_fns()
-    fill_fiscals()
+    # fill_servers()
+    # fill_workstations()
+    # fill_ofd_names()
+    # fill_model_kkts()
+    # fill_sroki_fns()
+    # fill_fiscals()
+    # with session_instance as session:
+        
+    #     stmt = select(Fiscalnik).where(Fiscalnik.uuid == 'objectBase$5611391')
+    #     user = session.scalars(stmt).first()
+    #     print(user.model_kkt)

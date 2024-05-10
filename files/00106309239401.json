@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ FPrint-22ПТК",
+    "serialNumber": "00106309239401",
+    "RNM": "0005463930014863",
+    "organizationName": "ИП ИЛЬЕНКО МАКСИМ МИХАЙЛОВИЧ",
+    "fn_serial": "9287440301158440",
+    "datetime_reg": "2021-05-21 15:58:00",
+    "dateTime_end": "2024-06-04 00:00:00",
+    "ofdName": "ООО \"Эвотор ОФД\"",
+    "bootVersion": "5.8.100",
+    "ffdVersion": "105",
+    "INN": "501300190904",
+    "attribute_excise": "False",
+    "attribute_marked": "False",
+    "fnExecution": "",
+    "hostname": "Kaldis_ST-7",
+    "url_rms": "https://kaldis-st-7.iiko.it:443/resto",
+    "teamviever_id": "130042147",
+    "anydesk_id": "595633117",
+    "total_space_sys": "59.62 Gb",
+    "free_space_sys": "20.22 Gb",
+    "current_time": "2024-05-06 01:41:41"
+}

@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ 25Ф",
+    "serialNumber": "00105707796831",
+    "RNM": "0004421585034085",
+    "organizationName": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"МЕГА СЕРВИС\"",
+    "fn_serial": "9287440301117169",
+    "datetime_reg": "2021-06-17 17:01:00",
+    "dateTime_end": "2024-07-01 00:00:00",
+    "ofdName": "АО <КАЛУГА АСТРАЛ>",
+    "bootVersion": "3.0.8319",
+    "ffdVersion": "105",
+    "INN": "7730255999",
+    "attribute_excise": "False",
+    "attribute_marked": "Не поддерживается в текущей версии драйвера",
+    "fnExecution": "Не поддерживается в текущей версии драйвера",
+    "hostname": "13CASH08",
+    "url_rms": "https://aom-himki.iiko.it:443/resto",
+    "teamviever_id": "1050831481",
+    "anydesk_id": "334171076",
+    "total_space_sys": "69.48 Gb",
+    "free_space_sys": "45.86 Gb",
+    "current_time": "2024-05-08 20:42:24"
+}

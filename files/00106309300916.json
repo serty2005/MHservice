@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ FPrint-22ПТК",
+    "serialNumber": "00106309300916",
+    "RNM": "0006138955056715",
+    "organizationName": "ИП ИЛЬЕНКО МАРИЯ ВЛАДИМИРОВНА",
+    "fn_serial": "7281440701572965",
+    "datetime_reg": "2024-04-23 21:49:00",
+    "dateTime_end": "2025-06-07 00:00:00",
+    "ofdName": "ООО \"Эвотор ОФД\"",
+    "bootVersion": "5.8.100",
+    "ffdVersion": "120",
+    "INN": "504005415507",
+    "attribute_excise": "True",
+    "attribute_marked": "True",
+    "fnExecution": "ФН-1.2 исполнение Ин15-3                       ",
+    "hostname": "POS-Lianozovo",
+    "url_rms": "https://kaldis-lianozovo.iiko.it:443/resto",
+    "teamviever_id": "1493401222",
+    "anydesk_id": "668050369",
+    "total_space_sys": "59.14 Gb",
+    "free_space_sys": "7.49 Gb",
+    "current_time": "2024-05-09 23:16:42"
+}

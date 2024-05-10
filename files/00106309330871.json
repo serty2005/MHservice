@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ FPrint-22ПТК",
+    "serialNumber": "00106309330871",
+    "RNM": "0002792971023790",
+    "organizationName": "ООО \"ФинЦентр\"",
+    "fn_serial": "9961440300055208",
+    "datetime_reg": "2023-02-23 09:04:00",
+    "dateTime_end": "2026-03-09 00:00:00",
+    "ofdName": "АО <Калуга Астрал>",
+    "bootVersion": "5.8.100",
+    "ffdVersion": "120",
+    "INN": "7743884031  ",
+    "attribute_excise": "False",
+    "attribute_marked": "True",
+    "fnExecution": "ФН-1.1М исполнение Ин36-1М                     ",
+    "hostname": "POS-W10",
+    "url_rms": "https://press-bar-moskva-m-servis.iiko.it:443/resto",
+    "teamviever_id": "1231759409",
+    "anydesk_id": "407482388",
+    "total_space_sys": "59.62 Gb",
+    "free_space_sys": "28.14 Gb",
+    "current_time": "2024-05-06 12:25:56"
+}

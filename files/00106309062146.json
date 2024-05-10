@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ FPrint-22ПТК",
+    "serialNumber": "00106309062146",
+    "RNM": "0005464060042782",
+    "organizationName": "ИП ИЛЬЕНКО МАКСИМ МИХАЙЛОВИЧ",
+    "fn_serial": "9287440301158465",
+    "datetime_reg": "2021-05-21 16:35:00",
+    "dateTime_end": "2024-06-04 00:00:00",
+    "ofdName": "ООО \"Эвотор ОФД\"",
+    "bootVersion": "5.8.100",
+    "ffdVersion": "105",
+    "INN": "501300190904",
+    "attribute_excise": "False",
+    "attribute_marked": "Не поддерживается в текущей версии драйвера",
+    "fnExecution": "Не поддерживается в текущей версии драйвера",
+    "hostname": "Kaldis_ST-8",
+    "url_rms": "https://kaldis-st-8.iiko.it:443/resto",
+    "teamviever_id": "130045574",
+    "anydesk_id": "856695376",
+    "total_space_sys": "59.62 Gb",
+    "free_space_sys": "26.18 Gb",
+    "current_time": "2024-05-09 01:11:30"
+}

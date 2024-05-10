@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ 77Ф",
+    "serialNumber": "00106905442664",
+    "RNM": "0001326280045003",
+    "organizationName": "АВАНЕСОВА НАТАЛЬЯ НОРДЕЕВНА",
+    "fn_serial": "7380440700519749",
+    "datetime_reg": "2024-04-05 14:58:00",
+    "dateTime_end": "2025-05-20 00:00:00",
+    "ofdName": "ООО <Такском>",
+    "bootVersion": "5.8.100",
+    "ffdVersion": "120",
+    "INN": "507901506303",
+    "attribute_excise": "True",
+    "attribute_marked": "True",
+    "fnExecution": "ФН-1.2 исполнение Ин15-4                       ",
+    "hostname": "DESKTOP-IUSVUSE",
+    "url_rms": "http://88.99.60.29:8187/resto",
+    "teamviever_id": "1284989181",
+    "anydesk_id": "None",
+    "total_space_sys": "59.04 Gb",
+    "free_space_sys": "18.64 Gb",
+    "current_time": "2024-05-06 02:08:13"
+}

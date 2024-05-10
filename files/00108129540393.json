@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ 20Ф",
+    "serialNumber": "00108129540393",
+    "RNM": "0007978093023550",
+    "organizationName": "ИП Ким Вячеслав",
+    "fn_serial": "7380440700292820",
+    "datetime_reg": "2024-04-11 15:18:00",
+    "dateTime_end": "2025-05-26 00:00:00",
+    "ofdName": "ООО  ПЕТЕР-СЕРВИС Спецтехнологии",
+    "bootVersion": "5.8.100",
+    "ffdVersion": "120",
+    "INN": "650125159002",
+    "attribute_excise": "True",
+    "attribute_marked": "True",
+    "fnExecution": "ФН-1.2 исполнение Ин15-4                       ",
+    "hostname": "KASSA2-KHABAR",
+    "url_rms": "https://mirine-brosko-habarovsk.iiko.it:443/resto",
+    "teamviever_id": "None",
+    "anydesk_id": "1063125576",
+    "total_space_sys": "59.09 Gb",
+    "free_space_sys": "34.89 Gb",
+    "current_time": "2024-05-07 12:27:50"
+}

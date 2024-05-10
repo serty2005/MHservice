@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ 30Ф",
+    "serialNumber": "00106126844935",
+    "RNM": "0007195642054348",
+    "organizationName": "ИП Зайцев Егор Владимирович",
+    "fn_serial": "7281440500463082",
+    "datetime_reg": "2023-04-24 21:05:00",
+    "dateTime_end": "2024-06-07 00:00:00",
+    "ofdName": "ООО  Такском",
+    "bootVersion": "5.8.100",
+    "ffdVersion": "120",
+    "INN": "110120364802",
+    "attribute_excise": "True",
+    "attribute_marked": "True",
+    "fnExecution": "ФН-1.2 исполнение Ин15-3                       ",
+    "hostname": "AVE-SHAVE-GK",
+    "url_rms": "https://ave-shawe.iiko.it:443/resto",
+    "teamviever_id": "None",
+    "anydesk_id": "391033027",
+    "total_space_sys": "58.13 Gb",
+    "free_space_sys": "27.29 Gb",
+    "current_time": "2024-05-09 14:15:56"
+}

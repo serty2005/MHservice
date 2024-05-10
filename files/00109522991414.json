@@ -1,0 +1,23 @@
+{
+    "modelName": "АТОЛ 22 v2 Ф",
+    "serialNumber": "00109522991414",
+    "RNM": "0007882610017388",
+    "organizationName": "ИП СОКЛАКОВА АННА СЕРГЕЕВНА",
+    "fn_serial": "7380440700100735",
+    "datetime_reg": "2024-02-29 13:10:00",
+    "dateTime_end": "2025-04-14 00:00:00",
+    "ofdName": "ООО  Такском",
+    "bootVersion": "5.8.17",
+    "ffdVersion": "120",
+    "INN": "771315163893",
+    "attribute_excise": "True",
+    "attribute_marked": "True",
+    "fnExecution": "ФН-1.2 исполнение Ин15-4                       ",
+    "hostname": "VESTERDAM",
+    "url_rms": "https://pokolenie-kofe-vesterdam.iiko.it:443/resto",
+    "teamviever_id": "743932094",
+    "anydesk_id": "369655451",
+    "total_space_sys": "58.13 Gb",
+    "free_space_sys": "21.30 Gb",
+    "current_time": "2024-05-09 10:38:44"
+}
