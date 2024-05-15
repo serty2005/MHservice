@@ -51,7 +51,7 @@ def create_table(type):
 def importFromJSON(file_path):
     with open(file_path, 'r', encoding='utf-8') as json_file:
         data = json.load(json_file)
-        if data['serialNumber'] and data['serialNumber'] is not None:
+        if 'serialNumber' in data:
             path = os.getenv("BDPATH") + 'fiscals.db'
             conn = sqlite3.connect(path)
             c = conn.cursor()
