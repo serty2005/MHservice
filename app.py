@@ -55,7 +55,9 @@ def importFromJSON(file_path):
             path = os.getenv("BDPATH") + 'fiscals.db'
             conn = sqlite3.connect(path)
             c = conn.cursor()
-            table_exists = c.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='pos_fiscals' ''').fetchone()
+            table_exists = c.execute(
+                '''SELECT name FROM sqlite_master WHERE type='table' AND name='pos_fiscals' '''
+            ).fetchone()
             if not table_exists:
                 create_table('pos_fiscals')
             c.execute('''INSERT OR REPLACE INTO pos_fiscals 
@@ -67,7 +69,10 @@ def importFromJSON(file_path):
                         data['bootVersion'], data['ffdVersion'], data['fnExecution'], data['INN']))
             conn.commit()
             conn.close()
-        else: print(f'В json не содержится SN фискальника. \n Тимак и AD там вот такие:\n TV:"{data['Teamviewer']}\n AD: {data['Anydesk']}"')
+        else:
+            tv = data['teamviewer_id']
+            ad = data['anydesk_id']
+            print(f'В json не содержится SN фискальника. \n TV:{tv}\n AD: {ad}')
 
 def process_json_files(directory):
     for filename in os.listdir(directory):
