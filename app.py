@@ -51,21 +51,23 @@ def create_table(type):
 def importFromJSON(file_path):
     with open(file_path, 'r', encoding='utf-8') as json_file:
         data = json.load(json_file)
-        path = os.getenv("BDPATH") + 'fiscals.db'
-        conn = sqlite3.connect(path)
-        c = conn.cursor()
-        table_exists = c.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='pos_fiscals' ''').fetchone()
-        if not table_exists:
-            create_table('pos_fiscals')
-        c.execute('''INSERT OR REPLACE INTO pos_fiscals 
-                     (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
-                     dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                     (data['modelName'], data['serialNumber'], data['RNM'], data['organizationName'],
-                      data['fn_serial'], data['datetime_reg'], data['dateTime_end'], data['ofdName'],
-                      data['bootVersion'], data['ffdVersion'], data['fnExecution'], data['INN']))
-        conn.commit()
-        conn.close()
+        if data['serialNuber'] and data['serialNumber'] != None:
+            path = os.getenv("BDPATH") + 'fiscals.db'
+            conn = sqlite3.connect(path)
+            c = conn.cursor()
+            table_exists = c.execute('''SELECT name FROM sqlite_master WHERE type='table' AND name='pos_fiscals' ''').fetchone()
+            if not table_exists:
+                create_table('pos_fiscals')
+            c.execute('''INSERT OR REPLACE INTO pos_fiscals 
+                        (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
+                        dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                        (data['modelName'], data['serialNumber'], data['RNM'], data['organizationName'],
+                        data['fn_serial'], data['datetime_reg'], data['dateTime_end'], data['ofdName'],
+                        data['bootVersion'], data['ffdVersion'], data['fnExecution'], data['INN']))
+            conn.commit()
+            conn.close()
+        else: print(f'В json не содержится SN фискальника. \n Тимак и AD там вот такие:\n TV:"{data['Teamviewer']}\n AD: {data['Anydesk']}"')
 
 def process_json_files(directory):
     for filename in os.listdir(directory):
