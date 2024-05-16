@@ -70,7 +70,7 @@ def importFromJSON(file_path):
             conn.commit()
             conn.close()
         else:
-            tv = data['teamviewer_id']
+            tv = data['teamviever_id']
             ad = data['anydesk_id']
             print(f'В json не содержится SN фискальника. \n TV:{tv}\n AD: {ad}')
 
