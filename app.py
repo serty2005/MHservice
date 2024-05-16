@@ -70,9 +70,10 @@ def importFromJSON(file_path):
             conn.commit()
             conn.close()
         else:
-            tv = data['teamviever_id']
-            ad = data['anydesk_id']
-            print(f'В json не содержится SN фискальника. \n TV:{tv}\n AD: {ad}')
+            tw = data.get('teamviewer_id','NotInstalled')
+            tv = data.get('teamviever_id','NotInstalled')
+            ad = data.get('anydesk_id','NotInstalled')
+            print(f'В json не содержится SN фискальника. \n TW:{tw}\n TV:{tv}\n AD: {ad}')
 
 def process_json_files(directory):
     for filename in os.listdir(directory):
