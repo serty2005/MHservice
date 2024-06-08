@@ -22,12 +22,14 @@ def exception_handler(exc_type, exc_value, exc_traceback):
 
 def post(url, params):
     response = requests.post(url, params=params)
+    
     if response.status_code == 201:
         return sys.stdout.write("Успешно добавлено\n")
     elif response.status_code == 200:
         return response.text
     elif response.status_code == 500:
         sys.stderr.write("Ошибка подключения: " + str.strip(response.text) + '\n')
+        response.raise_for_status()
 
 
 def create_table(type):
@@ -87,7 +89,7 @@ def importFromJSON(file_path):
             tw = data.get('teamviewer_id','NotInstalled')
             tv = data.get('teamviever_id','NotInstalled')
             ad = data.get('anydesk_id','NotInstalled')
-            print(f'В json не содержится SN фискальника. \n TW:{tw}\n TV:{tv}\n AD: {ad}')
+            print(f'В json не содержится SN Атола. \n TW:{tw}\n TV:{tv}\n AD: {ad}')
 
 def process_json_files(directory):
     for filename in os.listdir(directory):
@@ -152,9 +154,11 @@ def compare_and_update():
                 if sd_date != pos_date:
                     print(f"Объект с UUID {sd_entry[12]} будет изменен.\n")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
-                    if 'ИНН:' not in pos_entry[3]:
+                    if 'ИНН:' not in sd_entry[3] and pos_entry[2] != '0000000000000000':
                         legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
-                    else: 
+                    elif pos_entry[2] == '0000000000000000':
+                        legalName = 'ЗАКОНЧИЛСЯ ФН'
+                    else:
                         legalName = pos_entry[3]
                     edit_url = f'https://myhoreca.itsm365.com/sd/services/rest/edit/{sd_entry[12]}'
                     params = {'accessKey': os.getenv('SDKEY'), 'FNNumber': pos_entry[4], 'FNExpireDate': formatted_date, 'LegalName': legalName, 'RNKKT': pos_entry[2], 'FRDownloader': pos_entry[8]}
@@ -162,7 +166,6 @@ def compare_and_update():
                         post(edit_url, params)
                     except Exception as e:
                         exception_handler(type(e), e, e.__traceback__)
-                        print(params)
                         continue
     else:
         print('Все объекты проверены.')
@@ -172,9 +175,9 @@ def compare_and_update():
     conn_sd.close()
 
 def run_tasks():
-    schedule.every(30).minutes.do(update_sd_table)
-    schedule.every(30).minutes.do(compare_and_update)
-    schedule.every(30).minutes.do(process_json_files, os.getenv('JSONPATH'))
+    schedule.every(15).seconds.do(update_sd_table)
+    schedule.every(15).seconds.do(process_json_files, os.getenv('JSONPATH'))
+    schedule.every(15).seconds.do(compare_and_update)
 
     while True:
         schedule.run_pending()
@@ -183,11 +186,11 @@ def run_tasks():
 if __name__ == '__main__':
     create_table('pos_fiscals')
     create_table('sd_fiscals')
+    process_json_files(os.getenv('JSONPATH'))
+    time.sleep(1)
     update_sd_table()
     time.sleep(1)
     compare_and_update()
-    time.sleep(1)
-    process_json_files(os.getenv('JSONPATH'))
     time.sleep(1)
     run_tasks()
     
