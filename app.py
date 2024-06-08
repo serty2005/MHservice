@@ -63,6 +63,10 @@ def importFromJSON(file_path):
         data = json.load(json_file)
         if 'serialNumber' in data:
             path = os.getenv("BDPATH") + 'fiscals.db'
+            if data.get['RNM'] == '':
+                data['RNM'] = '0000000000000000'
+                data['fn_serial'] = '0000000000000000'
+            
             conn = sqlite3.connect(path)
             c = conn.cursor()
             table_exists = c.execute(
@@ -146,7 +150,7 @@ def compare_and_update():
                 pos_date = parser.parse(pos_entry[6])
 
                 if sd_date != pos_date:
-                    sys.stdout.write(f"Объект с UUID {sd_entry[12]} будет изменен.\n")
+                    print(f"Объект с UUID {sd_entry[12]} будет изменен.\n")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
                     if 'ИНН:' not in pos_entry[3]:
                         legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
