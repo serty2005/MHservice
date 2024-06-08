@@ -16,8 +16,7 @@ def exception_handler(exc_type, exc_value, exc_traceback):
         error_message = f"ERROR: An exception occurred + \n"
         error_message += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
         print(error_message)
-        # Вызываем стандартный обработчик исключений для вывода на экран
-        sys.excepthook(exc_type, exc_value, exc_traceback)
+
     except:
         pass
 
@@ -29,7 +28,7 @@ def post(url, params):
         return response.text
     elif response.status_code == 500:
         sys.stderr.write("Ошибка подключения: " + str.strip(response.text) + '\n')
-        sys.exit(1)
+
 
 def create_table(type):
     #Создаём пустую таблицу
@@ -155,7 +154,14 @@ def compare_and_update():
                         legalName = pos_entry[3]
                     edit_url = f'https://myhoreca.itsm365.com/sd/services/rest/edit/{sd_entry[12]}'
                     params = {'accessKey': os.getenv('SDKEY'), 'FNNumber': pos_entry[4], 'FNExpireDate': formatted_date, 'LegalName': legalName, 'RNKKT': pos_entry[2], 'FRDownloader': pos_entry[8]}
-                    post(edit_url, params)
+                    try:
+                        post(edit_url, params)
+                    except Exception as e:
+                        exception_handler(type(e), e, e.__traceback__)
+                        continue
+        else:
+            print('Все объекты проверены.')
+
 
     conn_pos.close()
     conn_sd.close()
