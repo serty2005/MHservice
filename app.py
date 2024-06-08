@@ -158,6 +158,7 @@ def compare_and_update():
                         post(edit_url, params)
                     except Exception as e:
                         exception_handler(type(e), e, e.__traceback__)
+                        print(params)
                         continue
         else:
             print('Все объекты проверены.')
@@ -178,4 +179,11 @@ def run_tasks():
 if __name__ == '__main__':
     create_table('pos_fiscals')
     create_table('sd_fiscals')
+    update_sd_table()
+    time.sleep(1)
+    compare_and_update()
+    time.sleep(1)
+    process_json_files(os.getenv('JSONPATH'))
+    time.sleep(1)
     run_tasks()
+    
