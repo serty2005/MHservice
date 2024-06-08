@@ -1,5 +1,6 @@
 FROM python:3.11.9-slim
 
+COPY . /opt/app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     tzdata \
