@@ -63,7 +63,7 @@ def importFromJSON(file_path):
         data = json.load(json_file)
         if 'serialNumber' in data:
             path = os.getenv("BDPATH") + 'fiscals.db'
-            if data.get['RNM'] == '':
+            if data.get('RNM') == '':
                 data['RNM'] = '0000000000000000'
                 data['fn_serial'] = '0000000000000000'
             
