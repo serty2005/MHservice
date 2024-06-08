@@ -160,8 +160,8 @@ def compare_and_update():
                         exception_handler(type(e), e, e.__traceback__)
                         print(params)
                         continue
-        else:
-            print('Все объекты проверены.')
+    else:
+        print('Все объекты проверены.')
 
 
     conn_pos.close()
