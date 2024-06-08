@@ -2,6 +2,7 @@ import os
 import json
 import sqlite3
 import time
+import traceback
 import requests
 import sys
 from dateutil import parser
@@ -9,6 +10,16 @@ import schedule
 # from dotenv import load_dotenv
 
 # load_dotenv()
+
+def exception_handler(exc_type, exc_value, exc_traceback):
+    try:
+        error_message = f"ERROR: An exception occurred + \n"
+        error_message += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        print(error_message)
+        # Вызываем стандартный обработчик исключений для вывода на экран
+        sys.excepthook(exc_type, exc_value, exc_traceback)
+    except:
+        pass
 
 def post(url, params):
     response = requests.post(url, params=params)
@@ -105,7 +116,10 @@ def importFromServiceDesk(sd_data):
 def update_sd_table():
     url = 'https://myhoreca.itsm365.com/sd/services/rest/find/objectBase$FR'
     params = {'accessKey': os.getenv('SDKEY'), 'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'}
-    response = post(url, params)
+    try:
+        response = post(url, params)
+    except Exception as e:
+        exception_handler(type(e), e, e.traceback)
     if response:
         importFromServiceDesk(response)
 
