@@ -8,9 +8,9 @@ import sys
 from dateutil import parser
 from datetime import datetime
 import schedule
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 def exception_handler(exc_type, exc_value, exc_traceback):
     try:
