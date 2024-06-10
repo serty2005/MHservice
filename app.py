@@ -6,37 +6,42 @@ import traceback
 import requests
 import sys
 from dateutil import parser
+from datetime import datetime
 import schedule
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# load_dotenv()
+load_dotenv()
 
 def exception_handler(exc_type, exc_value, exc_traceback):
     try:
-        error_message = f"ERROR: An exception occurred + \n"
+        error_message = f"ERROR: An exception occurred + "
         error_message += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-        print(error_message)
-
+        print('timestamp'+error_message)
     except:
         pass
+
+old_f = sys.stdout
+class F:
+    def write(self, x):
+        old_f.write(x.replace("timestamp", "[%s] " % str(datetime.now())))
+sys.stdout = F()
 
 def post(url, params):
     response = requests.post(url, params=params)
     
     if response.status_code == 201:
-        return sys.stdout.write("Успешно добавлено\n")
+        return print('timestamp'+"Успешно добавлено\n")
     elif response.status_code == 200:
         return response.text
     elif response.status_code == 500:
-        sys.stderr.write("Ошибка подключения: " + str.strip(response.text) + '\n')
+        print('timestamp'+"Ошибка подключения: " + str.strip(response.text) + '\n')
         response.raise_for_status()
 
 
-def create_table(type):
+def create_table(tablename):
     #Создаём пустую таблицу
     db_path = os.getenv("BDPATH")
     db_file = "fiscals.db"
-    table_name = type
     conn = sqlite3.connect(db_path + db_file)
     c = conn.cursor()
     c.execute("""
@@ -55,27 +60,36 @@ def create_table(type):
             INN TEXT,
             UUID TEXT,
             owner_uuid TEXT
-        )""" % table_name)
+        )""" % tablename)
     conn.commit()
     conn.close()
+    print('timestamp'+f"Таблица {tablename} создана")
 
 
 def importFromJSON(file_path):
     with open(file_path, 'r', encoding='utf-8') as json_file:
         data = json.load(json_file)
+        path = os.getenv("BDPATH") + 'fiscals.db'
+        conn = sqlite3.connect(path)
+        c = conn.cursor()
         if 'serialNumber' in data:
-            path = os.getenv("BDPATH") + 'fiscals.db'
+            print('timestamp'+f'SN Атола: {data.get("serialNumber")}')
+            if data.get('teamviewer_id') and data.get('teamviewer_id') != 'None':
+                print('timestamp'+'Teamviewer: ' + data.get('teamviewer_id'))
+            elif data.get('anydesk_id') and data.get('anydesk_id') != 'None':
+                print('timestamp'+'AnyDesk: ' + data.get('anydesk_id'))
+
             if data.get('RNM') == '':
+                print('timestamp'+'Регномер не найден. Ставлю 0000000000000000')
                 data['RNM'] = '0000000000000000'
                 data['fn_serial'] = '0000000000000000'
-            
-            conn = sqlite3.connect(path)
-            c = conn.cursor()
+                       
             table_exists = c.execute(
                 '''SELECT name FROM sqlite_master WHERE type='table' AND name='pos_fiscals' '''
             ).fetchone()
             if not table_exists:
                 create_table('pos_fiscals')
+
             c.execute('''INSERT OR REPLACE INTO pos_fiscals 
                         (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
                         dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN)
@@ -85,16 +99,18 @@ def importFromJSON(file_path):
                         data['bootVersion'], data['ffdVersion'], data['fnExecution'], data['INN']))
             conn.commit()
             conn.close()
-        else:
-            tw = data.get('teamviewer_id','NotInstalled')
-            tv = data.get('teamviever_id','NotInstalled')
-            ad = data.get('anydesk_id','NotInstalled')
-            print(f'В json не содержится SN Атола. \n TW:{tw}\n TV:{tv}\n AD: {ad}')
+            print('*****')
+
 
 def process_json_files(directory):
     for filename in os.listdir(directory):
         if filename.endswith('.json'):
-            importFromJSON(os.path.join(directory, filename))
+            print('timestamp'+f'Обработка файла {filename}')
+            try:
+                importFromJSON(os.path.join(directory, filename))
+            except Exception as e:
+                exception_handler(type(e), e, e.traceback)
+            # time.sleep(1)
 
 
 def importFromServiceDesk(sd_data):
@@ -123,6 +139,7 @@ def update_sd_table():
     params = {'accessKey': os.getenv('SDKEY'), 'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'}
     try:
         response = post(url, params)
+        print('timestamp'+'Получен ответ от сервиса')
     except Exception as e:
         exception_handler(type(e), e, e.traceback)
     if response:
@@ -152,7 +169,7 @@ def compare_and_update():
                 pos_date = parser.parse(pos_entry[6])
 
                 if sd_date != pos_date:
-                    print(f"Объект с UUID {sd_entry[12]} будет изменен.\n")
+                    print('timestamp'+f"Объект с UUID {sd_entry[12]} будет изменен.")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
                     if 'ИНН:' not in sd_entry[3] and pos_entry[2] != '0000000000000000':
                         legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
@@ -164,33 +181,30 @@ def compare_and_update():
                     params = {'accessKey': os.getenv('SDKEY'), 'FNNumber': pos_entry[4], 'FNExpireDate': formatted_date, 'LegalName': legalName, 'RNKKT': pos_entry[2], 'FRDownloader': pos_entry[8]}
                     try:
                         post(edit_url, params)
+                        print('timestamp'+f'Объект c UUID {sd_entry[12]} успешно изменен.')
                     except Exception as e:
-                        exception_handler(type(e), e, e.__traceback__)
+                        exception_handler(type(e), e, e.traceback)
                         continue
     else:
-        print('Все объекты проверены.')
+        print('timestamp'+'Все объекты проверены.')
 
 
     conn_pos.close()
     conn_sd.close()
 
 def run_tasks():
-    schedule.every(15).seconds.do(update_sd_table)
-    schedule.every(15).seconds.do(process_json_files, os.getenv('JSONPATH'))
-    schedule.every(15).seconds.do(compare_and_update)
+    schedule.every(3).minutes.do(update_sd_table)
+    schedule.every(3).minutes.do(process_json_files, os.getenv('JSONPATH'))
+    schedule.every(3).minutes.do(compare_and_update)
 
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(5)
 
 if __name__ == '__main__':
     create_table('pos_fiscals')
     create_table('sd_fiscals')
     process_json_files(os.getenv('JSONPATH'))
-    time.sleep(1)
-    update_sd_table()
-    time.sleep(1)
-    compare_and_update()
-    time.sleep(1)
+
     run_tasks()
     

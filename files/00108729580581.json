@@ -2,15 +2,45 @@
     "modelName": "АТОЛ 27Ф",
     "serialNumber": "00108729580581",
     "RNM": "0007037066025713",
-    "organizationName": "ИП ДАВЛАТОВ МИРЗОШО РАХМАТШОЕВИЧ",
-    "fn_serial": "7281440500179066",
-    "datetime_reg": "2023-02-16 10:39:00",
-    "dateTime_end": "2024-05-31 00:00:00",
-    "ofdName": "ООО  Эвотор ОФД",
+    "organizationName": "ИП Давлатов Мирзошо Рахматшоевич",
+    "fn_serial": "7381440700185921",
+    "datetime_reg": "2024-06-03 09:46:00",
+    "dateTime_end": "2027-06-18 00:00:00",
+    "ofdName": "ООО \"Эвотор ОФД\"",
     "bootVersion": "5.7.13",
     "ffdVersion": "105",
     "INN": "670602568722",
+    "attribute_excise": "False",
+    "attribute_marked": "False",
     "fnExecution": "",
-    "attribute_podakciz": "False",
-    "attribute_marked": "False"
+    "installed_driver": "10.9.2.0",
+    "licenses": {
+        "2": {
+            "name": "Запись ПО ККТ",
+            "dateFrom": "2020-12-01 00:00:00",
+            "dateUntil": "2021-11-30 00:00:00"
+        },
+        "5": {
+            "name": "Обработка маркировки",
+            "dateFrom": "2019-12-26 00:00:00",
+            "dateUntil": "2038-01-19 03:14:07"
+        },
+        "1": {
+            "name": "Фискальные функции",
+            "dateFrom": "2018-11-21 00:00:00",
+            "dateUntil": "2029-12-29 00:00:00"
+        },
+        "3": {
+            "name": "Работа с НДС 20%",
+            "dateFrom": "2018-11-21 00:00:00",
+            "dateUntil": "2029-12-29 00:00:00"
+        }
+    },
+    "hostname": "Novokuznec",
+    "url_rms": "http://95.216.24.155:8085/resto",
+    "teamviewer_id": "374266011",
+    "anydesk_id": "None",
+    "total_space_sys": "59.62 Gb",
+    "free_space_sys": "11.68 Gb",
+    "current_time": "2024-06-10 09:39:50"
 }
