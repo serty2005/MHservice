@@ -2,7 +2,7 @@ import os
 import json
 import sqlite3
 import time
-import traceback
+import __traceback__
 import requests
 import sys
 from dateutil import parser
@@ -12,10 +12,10 @@ import schedule
 
 # load_dotenv()
 
-def exception_handler(exc_type, exc_value, exc_traceback):
+def exception_handler(exc_type, exc_value, exc___traceback__):
     try:
         error_message = f"ERROR: An exception occurred + "
-        error_message += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        error_message += ''.join(__traceback__.format_exception(exc_type, exc_value, exc___traceback__))
         print('timestamp'+error_message)
     except:
         pass
@@ -109,7 +109,7 @@ def process_json_files(directory):
             try:
                 importFromJSON(os.path.join(directory, filename))
             except Exception as e:
-                exception_handler(type(e), e, e.traceback)
+                exception_handler(type(e), e, e.__traceback__)
             # time.sleep(1)
 
 
@@ -141,7 +141,7 @@ def update_sd_table():
         response = post(url, params)
         print('timestamp'+'Получен ответ от сервиса')
     except Exception as e:
-        exception_handler(type(e), e, e.traceback)
+        exception_handler(type(e), e, e.__traceback__)
     if response:
         importFromServiceDesk(response)
 
@@ -183,7 +183,7 @@ def compare_and_update():
                         post(edit_url, params)
                         print('timestamp'+f'Объект c UUID {sd_entry[12]} успешно изменен.')
                     except Exception as e:
-                        exception_handler(type(e), e, e.traceback)
+                        exception_handler(type(e), e, e.__traceback__)
                         continue
     else:
         print('timestamp'+'Все объекты проверены.')
