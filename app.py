@@ -2,7 +2,7 @@ import os
 import json
 import sqlite3
 import time
-import __traceback__
+import traceback
 import requests
 import sys
 from dateutil import parser
@@ -12,10 +12,10 @@ import schedule
 
 # load_dotenv()
 
-def exception_handler(exc_type, exc_value, exc___traceback__):
+def exception_handler(exc_type, exc_value, exc_traceback):
     try:
         error_message = f"ERROR: An exception occurred + "
-        error_message += ''.join(__traceback__.format_exception(exc_type, exc_value, exc___traceback__))
+        error_message += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
         print('timestamp'+error_message)
     except:
         pass
