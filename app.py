@@ -122,7 +122,11 @@ def importFromServiceDesk(sd_data):
         modelName = data['ModelKKT']['title']
         ofdName = data['OFDName']['title'] if data.get('OFDName') else None
         ffdVersion = data['FFD']['title'] if data.get('FFD') else None
-
+        table_exists = c.execute(
+            '''SELECT name FROM sqlite_master WHERE type='table' AND name='sd_fiscals' '''
+        ).fetchone()
+        if not table_exists:
+            create_table('sd_fiscals')
         c.execute('''INSERT OR REPLACE INTO sd_fiscals 
                      (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
                      dateTime_end, ofdName, bootVersion, ffdVersion, owner_uuid, UUID)
