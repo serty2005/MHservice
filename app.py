@@ -172,7 +172,7 @@ def compare_and_update():
                 sd_date = parser.parse(sd_entry[6])
                 pos_date = parser.parse(pos_entry[6])
 
-                if sd_date != pos_date:
+                if sd_date < pos_date:
                     print('timestamp'+f"Объект с UUID {sd_entry[12]} будет изменен.")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
                     if 'ИНН:' not in sd_entry[3] and pos_entry[2] != '0000000000000000':
