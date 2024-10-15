@@ -140,7 +140,9 @@ def importFromServiceDesk(sd_data):
 
 def update_sd_table():
     url = 'https://myhoreca.itsm365.com/sd/services/rest/find/objectBase$FR'
-    params = {'accessKey': os.getenv('SDKEY'), 'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'}
+    params = {'accessKey': os.getenv('SDKEY'), 
+              'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'
+              }
     try:
         response = post(url, params)
         print('timestamp'+'Получен ответ от сервиса')
@@ -175,6 +177,7 @@ def compare_and_update():
                 if sd_date < pos_date:
                     print('timestamp'+f"Объект с UUID {sd_entry[12]} будет изменен.")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
+                    formatted_date_reg = parser.parse(pos_entry[5]).strftime('%Y.%m.%d %H:%M:%S')
                     if 'ИНН:' not in sd_entry[3] and pos_entry[2] != '0000000000000000':
                         legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
                     elif pos_entry[2] == '0000000000000000':
@@ -182,7 +185,15 @@ def compare_and_update():
                     else:
                         legalName = pos_entry[3]
                     edit_url = f'https://myhoreca.itsm365.com/sd/services/rest/edit/{sd_entry[12]}'
-                    params = {'accessKey': os.getenv('SDKEY'), 'FNNumber': pos_entry[4], 'FNExpireDate': formatted_date, 'LegalName': legalName, 'RNKKT': pos_entry[2], 'FRDownloader': pos_entry[8]}
+                    params = {
+                        'accessKey': os.getenv('SDKEY'), 
+                        'FNNumber': pos_entry[4], 
+                        'FNExpireDate': formatted_date, 
+                        'LegalName': legalName, 
+                        'RNKKT': pos_entry[2], 
+                        'FRDownloader': pos_entry[8], 
+                        'KKTRegDate' : formatted_date_reg
+                        }
                     try:
                         post(edit_url, params)
                         print('timestamp'+f'Объект c UUID {sd_entry[12]} успешно изменен.')
