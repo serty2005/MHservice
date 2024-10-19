@@ -6,7 +6,7 @@ import traceback
 import requests
 import sys
 from dateutil import parser
-from datetime import datetime
+from datetime import datetime, timedelta
 import schedule
 # from dotenv import load_dotenv
 
@@ -173,8 +173,10 @@ def compare_and_update():
             if sd_entry[1] == pos_entry[1]:
                 sd_date = parser.parse(sd_entry[6])
                 pos_date = parser.parse(pos_entry[6])
+                sd_date_delta = sd_date - timedelta(days=65) #если фн обрезан до 13мес
 
-                if sd_date < pos_date:
+                if sd_date_delta < pos_date:
+
                     print('timestamp'+f"Объект с UUID {sd_entry[12]} будет изменен.")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
                     formatted_date_reg = parser.parse(pos_entry[5]).strftime('%Y.%m.%d %H:%M:%S')
