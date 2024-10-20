@@ -59,7 +59,8 @@ def create_table(tablename):
             fnExecution TEXT,
             INN TEXT,
             UUID TEXT,
-            owner_uuid TEXT
+            owner_uuid TEXT,
+            lastModifiedDate TEXT
         )""" % tablename)
     conn.commit()
     conn.close()
@@ -92,11 +93,11 @@ def importFromJSON(file_path):
 
             c.execute('''INSERT OR REPLACE INTO pos_fiscals 
                         (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
-                        dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                        dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN, lastModifiedDate)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                         (data['modelName'], data['serialNumber'], data['RNM'], data['organizationName'],
                         data['fn_serial'], data['datetime_reg'], data['dateTime_end'], data['ofdName'],
-                        data['bootVersion'], data['ffdVersion'], data['fnExecution'], data['INN']))
+                        data['bootVersion'], data['ffdVersion'], data['fnExecution'], data['INN'], data['current_time']))
             conn.commit()
             conn.close()
             print('*****')
@@ -129,11 +130,11 @@ def importFromServiceDesk(sd_data):
             create_table('sd_fiscals')
         c.execute('''INSERT OR REPLACE INTO sd_fiscals 
                      (modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
-                     dateTime_end, ofdName, bootVersion, ffdVersion, owner_uuid, UUID)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                     dateTime_end, ofdName, bootVersion, ffdVersion, owner_uuid, UUID, lastModifiedDate)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                      (modelName, data['FRSerialNumber'], data['RNKKT'], data['LegalName'],
                       data['FNNumber'], data['KKTRegDate'], data['FNExpireDate'], ofdName,
-                      data['FRDownloader'], ffdVersion, owner_uuid, data['UUID']))
+                      data['FRDownloader'], ffdVersion, owner_uuid, data['UUID'], data['lastModifiedDate']))
     conn.commit()
     conn.close()
 
@@ -141,7 +142,7 @@ def importFromServiceDesk(sd_data):
 def update_sd_table():
     url = 'https://myhoreca.itsm365.com/sd/services/rest/find/objectBase$FR'
     params = {'accessKey': os.getenv('SDKEY'), 
-              'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD'
+              'attrs': 'UUID,FRSerialNumber,RNKKT,KKTRegDate,FNExpireDate,FNNumber,owner,FRDownloader,LegalName,OFDName,ModelKKT,FFD,lastModifiedDate'
               }
     try:
         response = post(url, params)
@@ -159,12 +160,12 @@ def compare_and_update():
     c_sd = conn_sd.cursor()
 
     c_sd.execute('''SELECT modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
-                     dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, owner_uuid, UUID
+                     dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, owner_uuid, UUID, lastModifiedDate
                     FROM sd_fiscals''')
     sd_data = c_sd.fetchall()
 
     c_pos.execute('''SELECT modelName, serialNumber, RNM, organizationName, fn_serial, datetime_reg, 
-                     dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN
+                     dateTime_end, ofdName, bootVersion, ffdVersion, fnExecution, INN, lastModifiedDate
                       FROM pos_fiscals''')
     pos_data = c_pos.fetchall()
 
@@ -173,10 +174,9 @@ def compare_and_update():
             if sd_entry[1] == pos_entry[1]:
                 sd_date = parser.parse(sd_entry[6])
                 pos_date = parser.parse(pos_entry[6])
+                # sd_date_change = parser.parse(sd_entry[7])
                 sd_date_delta = sd_date - timedelta(days=65) #если фн обрезан до 13мес
-
-                if sd_date_delta < pos_date:
-
+                if sd_date_delta < pos_date and sd_date != pos_date:
                     print('timestamp'+f"Объект с UUID {sd_entry[12]} будет изменен.")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
                     formatted_date_reg = parser.parse(pos_entry[5]).strftime('%Y.%m.%d %H:%M:%S')
