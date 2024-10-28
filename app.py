@@ -180,12 +180,11 @@ def compare_and_update():
                     print('timestamp'+f"Объект с UUID {sd_entry[12]} будет изменен.")
                     formatted_date = pos_date.strftime('%Y.%m.%d %H:%M:%S')
                     formatted_date_reg = parser.parse(pos_entry[5]).strftime('%Y.%m.%d %H:%M:%S')
-                    if 'ИНН:' not in sd_entry[3] and pos_entry[2] != '0000000000000000':
-                        legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
-                    elif pos_entry[2] == '0000000000000000':
+                    if pos_entry[2] == '0000000000000000':
                         legalName = 'ЗАКОНЧИЛСЯ ФН'
                     else:
-                        legalName = pos_entry[3]
+                        legalName = pos_entry[3] + ' ' + 'ИНН:' + pos_entry[11]
+                    
                     edit_url = f'https://myhoreca.itsm365.com/sd/services/rest/edit/{sd_entry[12]}'
                     params = {
                         'accessKey': os.getenv('SDKEY'), 
